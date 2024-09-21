@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welkom</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center content horizontally */
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            font-size: 16px; /* Base font size */
+        }
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            background-color: #2a2a2a;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto; /* Center container horizontally */
+        }
+        .sidebar {
+            flex: 1;
+        }
+        .sidebar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .content {
+            flex: 2;
+            padding: 40px;
+        }
+        h1 {
+            color: #4a90e2;
+            margin-top: 0;
+            font-size: 2.5em; /* Larger heading */
+        }
+        p {
+            line-height: 1.6;
+            font-size: 1.1em; /* Slightly larger paragraph text */
+        }
+        a {
+            color: #4a90e2;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        a:hover {
+            color: #2a6cb0;
+        }
+
+        @media (min-width: 1024px) {
+            body {
+                font-size: 18px; /* Increase base font size for larger screens */
+            }
+            h1 {
+                font-size: 3em; /* Even larger heading for big screens */
+            }
+            p {
+                font-size: 1.2em; /* Larger paragraph text for big screens */
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column-reverse;
+            }
+            .sidebar, .content {
+                flex: auto;
+            }
+            .sidebar img {
+                max-height: 300px;
+            }
+        }
+        
+        .footer {
+            background-color: transparent; /* Remove background color */
+            width: 100%; /* Ensure footer spans full width */
+            max-width: 1200px; /* Match container max-width */
+            text-align: center;
+            padding: 15px 0;
+            font-size: 0.9em;
+            color: #888;
+        }
+        .footer a {
+            color: #888;
+            margin: 0 15px;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            color: #4a90e2;
+        }
+        .footer i {
+            margin-right: 5px;
+        }
+        .footer p {
+            margin: 10px 0 0;
+            font-size: 0.8em;
+        }
+
+        @media (max-width: 768px) {
+            .footer {
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <img src="johan.jpg" alt="Mijn foto">
+        </div>
+        <div class="content">
+            <h1>Johan Gorter</h1>
+            <p>
+              Ik heb in de afgelopen decennia veel verbeteringen meegemaakt voor softwareontwikkelaars.
+              Dankzij die verbeteringen kan software nu sneller ontwikkeld worden, 
+              beter schalen en continu verbeterd worden met minimale kans op fouten.
+            </p>
+            <p>
+              En dankzij AI is het nu nog gemakkelijker om hier gebruik van te maken.
+            </p>
+            <p>
+              Maakt u al gebruik van de nieuwste mogelijkheden?
+              Ik denk graag mee over verbetermogelijkheden en uitdagingen.
+              U kunt me bereiken via <a href="https://www.linkedin.com/services/page/14045b32927401074b/">LinkedIn</a>.
+            </p>
+        </div>
+    </div>
+    <div class="footer">
+        <a href="https://www.linkedin.com/in/jgorter/" target="_blank"><i class="fab fa-linkedin"></i>LinkedIn</a>
+        <a href="https://github.com/johan-gorter" target="_blank"><i class="fab fa-github"></i>GitHub</a>
+        <p>KVK-nummer: 94834571</p>
+    </div>
+</body>
+</html>
