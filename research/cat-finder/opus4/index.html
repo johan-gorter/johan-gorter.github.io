@@ -89,9 +89,16 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
         
-        // Initialize PeerJS with unique ID
-        function initPeer(callback) {
-            myId = 'user-' + Math.random().toString(36).substr(2, 9);
+        // Generate host ID from room code (deterministic)
+        function getHostId(roomCode) {
+            // Create a "predictable" ID based on room code
+            // Add prefix to make it valid peer ID
+            return 'host-' + roomCode.toLowerCase().replace(/[^a-z0-9]/g, '') + '-room';
+        }
+        
+        // Initialize PeerJS with specific ID
+        function initPeer(peerId, callback) {
+            myId = peerId;
             peer = new Peer(myId);
             
             peer.on('open', (id) => {
@@ -111,24 +118,33 @@
             });
             
             peer.on('error', (err) => {
-                updateStatus('Error: ' + err.message);
+                if (err.type === 'unavailable-id') {
+                    // Host ID already taken, join as regular user
+                    if (isHost) {
+                        isHost = false;
+                        joinRoom();
+                    } else {
+                        updateStatus('Error: ' + err.message);
+                    }
+                } else {
+                    updateStatus('Error: ' + err.message);
+                }
             });
         }
         
         // Create a new room
         function createRoom() {
             ROOM_CODE = document.getElementById('roomCode').value || 'CAT2024';
+            isHost = true;
             
-            initPeer(() => {
-                isHost = true;
+            // Try to become host with deterministic ID
+            const hostId = getHostId(ROOM_CODE);
+            initPeer(hostId, () => {
                 roomData = {
                     code: ROOM_CODE,
-                    hostId: myId,
-                    users: [myId]
+                    hostId: hostId,
+                    users: [hostId]
                 };
-                
-                // Store room data in localStorage for persistence
-                localStorage.setItem('room-' + ROOM_CODE, JSON.stringify(roomData));
                 
                 updateStatus('Room created! Code: ' + ROOM_CODE);
                 showConnectedUI();
@@ -138,29 +154,34 @@
         // Join existing room
         function joinRoom() {
             ROOM_CODE = document.getElementById('roomCode').value || 'CAT2024';
+            isHost = false;
             
-            // Check localStorage first
-            const storedRoom = localStorage.getItem('room-' + ROOM_CODE);
-            if (storedRoom) {
-                roomData = JSON.parse(storedRoom);
+            // Generate unique user ID
+            const userId = 'user-' + Math.random().toString(36).substr(2, 9);
+            
+            initPeer(userId, () => {
+                // Connect to host using deterministic host ID
+                const hostId = getHostId(ROOM_CODE);
+                const hostConn = peer.connect(hostId);
                 
-                initPeer(() => {
-                    // Connect to host
-                    const hostConn = peer.connect(roomData.hostId);
-                    hostConn.on('open', () => {
-                        setupConnection(hostConn);
-                        hostConn.send({ type: 'joinRoom', roomCode: ROOM_CODE });
-                        updateStatus('Joined room: ' + ROOM_CODE);
-                        showConnectedUI();
-                    });
-                    hostConn.on('error', () => {
-                        updateStatus('Could not connect to room host. Try creating a new room.');
-                    });
+                hostConn.on('open', () => {
+                    setupConnection(hostConn);
+                    hostConn.send({ type: 'joinRoom', roomCode: ROOM_CODE });
+                    updateStatus('Joined room: ' + ROOM_CODE);
+                    showConnectedUI();
                 });
-            } else {
-                // Try to discover room through signaling server workaround
-                updateStatus('Room not found. The host may need to share the room manually or you can create a new room.');
-            }
+                
+                hostConn.on('error', () => {
+                    updateStatus('Room not found. Make sure someone has created the room first.');
+                });
+                
+                // Timeout for connection
+                setTimeout(() => {
+                    if (!hostConn.open) {
+                        updateStatus('Could not find room. Make sure the room creator is still online.');
+                    }
+                }, 5000);
+            });
         }
         
         // Show connected UI
@@ -208,15 +229,16 @@
                 updateUserPosition(peerId, data.lat, data.lng, data.timestamp);
             } else if (data.type === 'joinRoom' && isHost) {
                 // Host: Add user to room and share user list
-                roomData.users.push(peerId);
-                localStorage.setItem('room-' + ROOM_CODE, JSON.stringify(roomData));
+                if (!roomData.users.includes(peerId)) {
+                    roomData.users.push(peerId);
+                }
                 
                 // Send current user list to new user
                 const conn = connections.get(peerId);
                 if (conn && conn.open) {
                     conn.send({ 
                         type: 'roomUsers', 
-                        users: roomData.users.filter(id => id !== peerId) 
+                        users: roomData.users.filter(id => id !== peerId && connections.has(id)) 
                     });
                 }
                 
