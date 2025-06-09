@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Missing Cat Search Party</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        #map { height: 100vh; width: 100%; }
+        #controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+        #status {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            z-index: 1000;
+            max-width: 300px;
+        }
+        button {
+            margin: 5px;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 3px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover { background: #0056b3; }
+        button.active { background: #28a745; }
+        .user-marker { 
+            background: #007bff;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="controls">
+        <h3>Cat Search Party</h3>
+        <button id="micBtn" onclick="toggleMic()">🎤 Enable Mic</button>
+        <div>Users: <span id="userCount">1</span></div>
+    </div>
+    <div id="status">
+        <div id="statusText">Initializing...</div>
+    </div>
+
+    <script>
+        // Hardcoded room ID - everyone uses the same ID to connect
+        const ROOM_ID = 'missing-cat-search-2024';
+        
+        let map, myMarker, myId, peer;
+        let connections = new Map();
+        let users = new Map();
+        let trails = new Map();
+        let localStream = null;
+        let micEnabled = false;
+        
+        // Initialize map
+        map = L.map('map').setView([0, 0], 16);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // Initialize PeerJS
+        function initPeer() {
+            myId = 'user-' + Math.random().toString(36).substr(2, 9);
+            peer = new Peer(myId);
+            
+            peer.on('open', (id) => {
+                updateStatus('Connected as ' + id);
+                // Connect to room coordinator
+                connectToRoom();
+            });
+            
+            peer.on('connection', (conn) => {
+                setupConnection(conn);
+            });
+            
+            peer.on('call', (call) => {
+                if (localStream) {
+                    call.answer(localStream);
+                    handleCall(call);
+                }
+            });
+            
+            peer.on('error', (err) => {
+                updateStatus('Error: ' + err.message);
+            });
+        }
+        
+        // Connect to room using hardcoded ID
+        function connectToRoom() {
+            // Try to connect to the room coordinator
+            const conn = peer.connect(ROOM_ID);
+            conn.on('open', () => {
+                setupConnection(conn);
+                // If connection fails, become the coordinator
+                setTimeout(() => {
+                    if (!connections.has(ROOM_ID)) {
+                        becomeCoordinator();
+                    }
+                }, 2000);
+            });
+            conn.on('error', () => {
+                becomeCoordinator();
+            });
+        }
+        
+        // Become room coordinator if first user
+        function becomeCoordinator() {
+            // Register as room ID to accept connections
+            const coordinator = new Peer(ROOM_ID);
+            coordinator.on('connection', (conn) => {
+                setupConnection(conn);
+                // Share existing connections
+                broadcastUserList();
+            });
+            coordinator.on('call', (call) => {
+                if (localStream) {
+                    call.answer(localStream);
+                    handleCall(call);
+                }
+            });
+        }
+        
+        // Setup peer connection
+        function setupConnection(conn) {
+            const peerId = conn.peer;
+            connections.set(peerId, conn);
+            
+            conn.on('open', () => {
+                updateStatus('Connected to ' + peerId);
+                // Send initial position
+                if (myMarker) {
+                    sendPosition();
+                }
+            });
+            
+            conn.on('data', (data) => {
+                handleData(peerId, data);
+            });
+            
+            conn.on('close', () => {
+                connections.delete(peerId);
+                removeUser(peerId);
+            });
+            
+            // Call peer if mic is enabled
+            if (micEnabled && localStream) {
+                const call = peer.call(peerId, localStream);
+                handleCall(call);
+            }
+            
+            updateUserCount();
+        }
+        
+        // Handle incoming data
+        function handleData(peerId, data) {
+            if (data.type === 'position') {
+                updateUserPosition(peerId, data.lat, data.lng, data.timestamp);
+            } else if (data.type === 'userList') {
+                // Connect to other users
+                data.users.forEach(userId => {
+                    if (userId !== myId && !connections.has(userId)) {
+                        const conn = peer.connect(userId);
+                        setupConnection(conn);
+                    }
+                });
+            }
+        }
+        
+        // Handle audio calls
+        function handleCall(call) {
+            call.on('stream', (remoteStream) => {
+                // Create audio element for remote stream
+                let audio = document.getElementById('audio-' + call.peer);
+                if (!audio) {
+                    audio = document.createElement('audio');
+                    audio.id = 'audio-' + call.peer;
+                    audio.autoplay = true;
+                    document.body.appendChild(audio);
+                }
+                audio.srcObject = remoteStream;
+            });
+            
+            call.on('close', () => {
+                const audio = document.getElementById('audio-' + call.peer);
+                if (audio) audio.remove();
+            });
+        }
+        
+        // Toggle microphone
+        async function toggleMic() {
+            const btn = document.getElementById('micBtn');
+            
+            if (!micEnabled) {
+                try {
+                    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    micEnabled = true;
+                    btn.textContent = '🔇 Mute Mic';
+                    btn.classList.add('active');
+                    
+                    // Call all connected peers
+                    connections.forEach((conn, peerId) => {
+                        const call = peer.call(peerId, localStream);
+                        handleCall(call);
+                    });
+                } catch (err) {
+                    updateStatus('Microphone access denied');
+                }
+            } else {
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                    localStream = null;
+                }
+                micEnabled = false;
+                btn.textContent = '🎤 Enable Mic';
+                btn.classList.remove('active');
+            }
+        }
+        
+        // Get and watch position
+        function startLocationTracking() {
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        updateMyPosition(latitude, longitude);
+                    },
+                    (error) => {
+                        updateStatus('Location error: ' + error.message);
+                    },
+                    { enableHighAccuracy: true, maximumAge: 1000 }
+                );
+            } else {
+                updateStatus('Geolocation not supported');
+            }
+        }
+        
+        // Update my position
+        function updateMyPosition(lat, lng) {
+            if (!myMarker) {
+                myMarker = L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        className: 'user-marker',
+                        html: '<div style="background: #28a745; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white;"></div>'
+                    })
+                }).addTo(map);
+                map.setView([lat, lng], 16);
+            } else {
+                myMarker.setLatLng([lat, lng]);
+            }
+            
+            // Update trail
+            updateTrail(myId, lat, lng);
+            
+            // Send position to peers
+            sendPosition();
+        }
+        
+        // Send position to all peers
+        function sendPosition() {
+            if (!myMarker) return;
+            const pos = myMarker.getLatLng();
+            const data = {
+                type: 'position',
+                lat: pos.lat,
+                lng: pos.lng,
+                timestamp: Date.now()
+            };
+            connections.forEach(conn => {
+                if (conn.open) conn.send(data);
+            });
+        }
+        
+        // Update other user's position
+        function updateUserPosition(userId, lat, lng, timestamp) {
+            let user = users.get(userId);
+            if (!user) {
+                user = {
+                    marker: L.marker([lat, lng], {
+                        icon: L.divIcon({
+                            className: 'user-marker',
+                            html: '<div style="background: #007bff; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white;"></div>'
+                        })
+                    }).addTo(map)
+                };
+                users.set(userId, user);
+            } else {
+                user.marker.setLatLng([lat, lng]);
+            }
+            
+            // Update trail
+            updateTrail(userId, lat, lng);
+            updateUserCount();
+        }
+        
+        // Update movement trail
+        function updateTrail(userId, lat, lng) {
+            if (!trails.has(userId)) {
+                trails.set(userId, {
+                    points: [],
+                    polyline: L.polyline([], {
+                        color: userId === myId ? '#28a745' : '#007bff',
+                        weight: 3,
+                        opacity: 0.5
+                    }).addTo(map)
+                });
+            }
+            
+            const trail = trails.get(userId);
+            const now = Date.now();
+            
+            // Add new point
+            trail.points.push({ lat, lng, time: now });
+            
+            // Remove points older than 10 minutes
+            trail.points = trail.points.filter(p => now - p.time < 600000);
+            
+            // Update polyline
+            trail.polyline.setLatLngs(trail.points.map(p => [p.lat, p.lng]));
+        }
+        
+        // Remove user
+        function removeUser(userId) {
+            const user = users.get(userId);
+            if (user) {
+                map.removeLayer(user.marker);
+                users.delete(userId);
+            }
+            
+            const trail = trails.get(userId);
+            if (trail) {
+                map.removeLayer(trail.polyline);
+                trails.delete(userId);
+            }
+            
+            updateUserCount();
+        }
+        
+        // Broadcast user list (for coordinator)
+        function broadcastUserList() {
+            const userList = Array.from(connections.keys());
+            connections.forEach(conn => {
+                if (conn.open) {
+                    conn.send({ type: 'userList', users: userList });
+                }
+            });
+        }
+        
+        // Update UI
+        function updateStatus(text) {
+            document.getElementById('statusText').textContent = text;
+        }
+        
+        function updateUserCount() {
+            document.getElementById('userCount').textContent = users.size + 1;
+        }
+        
+        // Initialize app
+        initPeer();
+        startLocationTracking();
+        
+        // Send position updates every 5 seconds
+        setInterval(sendPosition, 5000);
+    </script>
+</body>
+</html>
