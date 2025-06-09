@@ -55,16 +55,26 @@
     <div id="map"></div>
     <div id="controls">
         <h3>Cat Search Party</h3>
-        <button id="micBtn" onclick="toggleMic()">🎤 Enable Mic</button>
-        <div>Users: <span id="userCount">1</span></div>
+        <div id="roomInfo">
+            <input type="text" id="roomCode" placeholder="Enter room code" value="CAT2024">
+            <button onclick="joinRoom()">Join Room</button>
+            <button onclick="createRoom()">Create Room</button>
+        </div>
+        <div id="connectedInfo" style="display:none;">
+            <p>Room: <span id="currentRoom"></span></p>
+            <button id="micBtn" onclick="toggleMic()">🎤 Enable Mic</button>
+            <div>Users: <span id="userCount">1</span></div>
+        </div>
     </div>
     <div id="status">
-        <div id="statusText">Initializing...</div>
+        <div id="statusText">Enter room code to join search party</div>
     </div>
 
     <script>
-        // Hardcoded room ID - everyone uses the same ID to connect
-        const ROOM_ID = 'missing-cat-search-2024';
+        // Room management
+        let ROOM_CODE = 'CAT2024'; // Default room code
+        let roomData = null;
+        let isHost = false;
         
         let map, myMarker, myId, peer;
         let connections = new Map();
@@ -79,15 +89,14 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
         
-        // Initialize PeerJS
-        function initPeer() {
+        // Initialize PeerJS with unique ID
+        function initPeer(callback) {
             myId = 'user-' + Math.random().toString(36).substr(2, 9);
             peer = new Peer(myId);
             
             peer.on('open', (id) => {
                 updateStatus('Connected as ' + id);
-                // Connect to room coordinator
-                connectToRoom();
+                if (callback) callback();
             });
             
             peer.on('connection', (conn) => {
@@ -106,39 +115,60 @@
             });
         }
         
-        // Connect to room using hardcoded ID
-        function connectToRoom() {
-            // Try to connect to the room coordinator
-            const conn = peer.connect(ROOM_ID);
-            conn.on('open', () => {
-                setupConnection(conn);
-                // If connection fails, become the coordinator
-                setTimeout(() => {
-                    if (!connections.has(ROOM_ID)) {
-                        becomeCoordinator();
-                    }
-                }, 2000);
-            });
-            conn.on('error', () => {
-                becomeCoordinator();
+        // Create a new room
+        function createRoom() {
+            ROOM_CODE = document.getElementById('roomCode').value || 'CAT2024';
+            
+            initPeer(() => {
+                isHost = true;
+                roomData = {
+                    code: ROOM_CODE,
+                    hostId: myId,
+                    users: [myId]
+                };
+                
+                // Store room data in localStorage for persistence
+                localStorage.setItem('room-' + ROOM_CODE, JSON.stringify(roomData));
+                
+                updateStatus('Room created! Code: ' + ROOM_CODE);
+                showConnectedUI();
             });
         }
         
-        // Become room coordinator if first user
-        function becomeCoordinator() {
-            // Register as room ID to accept connections
-            const coordinator = new Peer(ROOM_ID);
-            coordinator.on('connection', (conn) => {
-                setupConnection(conn);
-                // Share existing connections
-                broadcastUserList();
-            });
-            coordinator.on('call', (call) => {
-                if (localStream) {
-                    call.answer(localStream);
-                    handleCall(call);
-                }
-            });
+        // Join existing room
+        function joinRoom() {
+            ROOM_CODE = document.getElementById('roomCode').value || 'CAT2024';
+            
+            // Check localStorage first
+            const storedRoom = localStorage.getItem('room-' + ROOM_CODE);
+            if (storedRoom) {
+                roomData = JSON.parse(storedRoom);
+                
+                initPeer(() => {
+                    // Connect to host
+                    const hostConn = peer.connect(roomData.hostId);
+                    hostConn.on('open', () => {
+                        setupConnection(hostConn);
+                        hostConn.send({ type: 'joinRoom', roomCode: ROOM_CODE });
+                        updateStatus('Joined room: ' + ROOM_CODE);
+                        showConnectedUI();
+                    });
+                    hostConn.on('error', () => {
+                        updateStatus('Could not connect to room host. Try creating a new room.');
+                    });
+                });
+            } else {
+                // Try to discover room through signaling server workaround
+                updateStatus('Room not found. The host may need to share the room manually or you can create a new room.');
+            }
+        }
+        
+        // Show connected UI
+        function showConnectedUI() {
+            document.getElementById('roomInfo').style.display = 'none';
+            document.getElementById('connectedInfo').style.display = 'block';
+            document.getElementById('currentRoom').textContent = ROOM_CODE;
+            startLocationTracking();
         }
         
         // Setup peer connection
@@ -176,15 +206,46 @@
         function handleData(peerId, data) {
             if (data.type === 'position') {
                 updateUserPosition(peerId, data.lat, data.lng, data.timestamp);
-            } else if (data.type === 'userList') {
-                // Connect to other users
+            } else if (data.type === 'joinRoom' && isHost) {
+                // Host: Add user to room and share user list
+                roomData.users.push(peerId);
+                localStorage.setItem('room-' + ROOM_CODE, JSON.stringify(roomData));
+                
+                // Send current user list to new user
+                const conn = connections.get(peerId);
+                if (conn && conn.open) {
+                    conn.send({ 
+                        type: 'roomUsers', 
+                        users: roomData.users.filter(id => id !== peerId) 
+                    });
+                }
+                
+                // Notify existing users about new user
+                broadcastNewUser(peerId);
+            } else if (data.type === 'roomUsers') {
+                // Connect to all users in room
                 data.users.forEach(userId => {
                     if (userId !== myId && !connections.has(userId)) {
                         const conn = peer.connect(userId);
                         setupConnection(conn);
                     }
                 });
+            } else if (data.type === 'newUser') {
+                // Connect to new user
+                if (data.userId !== myId && !connections.has(data.userId)) {
+                    const conn = peer.connect(data.userId);
+                    setupConnection(conn);
+                }
             }
+        }
+        
+        // Broadcast new user to all connected peers
+        function broadcastNewUser(newUserId) {
+            connections.forEach((conn, peerId) => {
+                if (conn.open && peerId !== newUserId) {
+                    conn.send({ type: 'newUser', userId: newUserId });
+                }
+            });
         }
         
         // Handle audio calls
@@ -377,10 +438,16 @@
         
         // Initialize app
         initPeer();
-        startLocationTracking();
         
-        // Send position updates every 5 seconds
-        setInterval(sendPosition, 5000);
+        // Auto-join if room exists in localStorage
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const roomParam = urlParams.get('room');
+            if (roomParam) {
+                document.getElementById('roomCode').value = roomParam;
+                joinRoom();
+            }
+        });
     </script>
 </body>
 </html>
