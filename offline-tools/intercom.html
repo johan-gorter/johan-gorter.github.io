@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Video Intercom</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            position: relative;
+        }
+        
+        #videoGrid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-auto-rows: 1fr;
+            gap: 2px;
+            background: #000;
+        }
+        
+        #videoGrid.active {
+            display: grid;
+        }
+        
+        .videoWrapper {
+            position: relative;
+            overflow: hidden;
+            background: #111;
+        }
+        
+        .videoWrapper video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        #callButton {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #4CAF50;
+            border: 3px solid #fff;
+            cursor: pointer;
+            margin-bottom: 40px;
+            transition: all 0.3s ease;
+            z-index: 10;
+            position: relative;
+        }
+        
+        #callButton:active {
+            transform: scale(0.95);
+        }
+        
+        #callButton.active {
+            background: #f44336;
+        }
+        
+        #status {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            opacity: 0.7;
+            text-align: center;
+        }
+        
+        @media (max-width: 600px) {
+            #videoGrid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+</head>
+<body>
+    <div id="container">
+        <div id="status">Initializing...</div>
+        <div id="videoGrid"></div>
+        <button id="callButton"></button>
+    </div>
+
+    <script>
+        // Keep screen awake
+        if ('wakeLock' in navigator) {
+            navigator.wakeLock.request('screen').catch(err => {
+                console.log('Wake lock error:', err);
+            });
+        }
+
+        // State management
+        let peer = null;
+        let roomId = null;
+        let isHost = false;
+        let connections = new Map();
+        let localStream = null;
+        let isCallActive = false;
+
+        // Generate secure random room ID
+        function generateRoomId() {
+            return Array.from(crypto.getRandomValues(new Uint8Array(6)))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        // Initialize the app
+        function init() {
+            const params = new URLSearchParams(window.location.search);
+            const hostId = params.get('host');
+            const joinId = params.get('join');
+
+            if (hostId) {
+                // Returning host
+                roomId = hostId;
+                isHost = true;
+                startPeer(roomId);
+            } else if (joinId) {
+                // Client joining
+                roomId = joinId;
+                isHost = false;
+                startPeer();
+            } else {
+                // New room
+                roomId = generateRoomId();
+                isHost = true;
+                window.history.replaceState({}, '', `?host=${roomId}`);
+                startPeer(roomId);
+            }
+        }
+
+        // Start PeerJS
+        function startPeer(id = null) {
+            peer = id ? new Peer(id) : new Peer();
+
+            peer.on('open', (peerId) => {
+                updateStatus(isHost ? 
+                    `Room: ${roomId}<br>Share: ${window.location.origin}${window.location.pathname}?join=${roomId}` : 
+                    `Connecting to room: ${roomId}`
+                );
+
+                if (!isHost) {
+                    // Client connects to host
+                    connectToHost();
+                }
+            });
+
+            peer.on('connection', handleConnection);
+            peer.on('call', handleIncomingCall);
+
+            peer.on('error', (err) => {
+                console.error('Peer error:', err);
+                updateStatus(`Error: ${err.type}`);
+            });
+        }
+
+        // Connect to host as client
+        function connectToHost() {
+            const conn = peer.connect(roomId);
+            setupConnection(conn, roomId);
+        }
+
+        // Handle new connections
+        function handleConnection(conn) {
+            setupConnection(conn, conn.peer);
+        }
+
+        // Setup connection handlers
+        function setupConnection(conn, peerId) {
+            conn.on('open', () => {
+                connections.set(peerId, { dataConn: conn });
+                updateStatus(isHost ? `${connections.size} client(s) connected` : 'Connected to host');
+                
+                // Send current call state
+                conn.send({ type: 'callState', active: isCallActive });
+            });
+
+            conn.on('data', (data) => {
+                handleMessage(data, peerId);
+            });
+
+            conn.on('close', () => {
+                connections.delete(peerId);
+                removeVideoElement(peerId);
+                updateStatus(isHost ? `${connections.size} client(s) connected` : 'Disconnected');
+            });
+        }
+
+        // Handle messages
+        function handleMessage(data, peerId) {
+            if (data.type === 'toggleCall') {
+                toggleCall();
+            } else if (data.type === 'callState') {
+                if (data.active && !isCallActive) {
+                    toggleCall();
+                } else if (!data.active && isCallActive) {
+                    toggleCall();
+                }
+            }
+        }
+
+        // Toggle call button click
+        document.getElementById('callButton').addEventListener('click', () => {
+            toggleCall();
+            // Broadcast to all connections
+            connections.forEach((conn) => {
+                conn.dataConn.send({ type: 'toggleCall' });
+            });
+        });
+
+        // Toggle call state
+        async function toggleCall() {
+            const button = document.getElementById('callButton');
+            const grid = document.getElementById('videoGrid');
+
+            if (!isCallActive) {
+                // Start call
+                try {
+                    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                    
+                    // Add local video
+                    addVideoElement('local', localStream);
+                    
+                    // Call all connected peers
+                    if (isHost) {
+                        connections.forEach((conn, peerId) => {
+                            const call = peer.call(peerId, localStream);
+                            setupCall(call, peerId);
+                        });
+                    } else {
+                        // Client calls host
+                        const call = peer.call(roomId, localStream);
+                        setupCall(call, roomId);
+                    }
+
+                    button.classList.add('active');
+                    grid.classList.add('active');
+                    isCallActive = true;
+                } catch (err) {
+                    console.error('Failed to get media:', err);
+                    updateStatus('Camera/microphone access denied');
+                }
+            } else {
+                // End call
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                    localStream = null;
+                }
+
+                // Clear all videos
+                document.getElementById('videoGrid').innerHTML = '';
+                
+                button.classList.remove('active');
+                grid.classList.remove('active');
+                isCallActive = false;
+            }
+        }
+
+        // Handle incoming calls
+        function handleIncomingCall(call) {
+            if (localStream && isCallActive) {
+                call.answer(localStream);
+                setupCall(call, call.peer);
+            }
+        }
+
+        // Setup call handlers
+        function setupCall(call, peerId) {
+            call.on('stream', (remoteStream) => {
+                addVideoElement(peerId, remoteStream);
+            });
+
+            call.on('close', () => {
+                removeVideoElement(peerId);
+            });
+
+            // Store call reference
+            const conn = connections.get(peerId);
+            if (conn) {
+                conn.call = call;
+            }
+        }
+
+        // Add video element to grid
+        function addVideoElement(id, stream) {
+            const grid = document.getElementById('videoGrid');
+            let wrapper = document.getElementById(`video-${id}`);
+            
+            if (!wrapper) {
+                wrapper = document.createElement('div');
+                wrapper.id = `video-${id}`;
+                wrapper.className = 'videoWrapper';
+                
+                const video = document.createElement('video');
+                video.autoplay = true;
+                video.playsInline = true;
+                video.muted = (id === 'local');
+                
+                wrapper.appendChild(video);
+                grid.appendChild(wrapper);
+            }
+            
+            const video = wrapper.querySelector('video');
+            video.srcObject = stream;
+        }
+
+        // Remove video element
+        function removeVideoElement(id) {
+            const element = document.getElementById(`video-${id}`);
+            if (element) {
+                element.remove();
+            }
+        }
+
+        // Update status text
+        function updateStatus(text) {
+            document.getElementById('status').innerHTML = text;
+        }
+
+        // Start the app
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline Tools</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            line-height: 1.6;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        .offline-badge {
+            display: inline-block;
+            background-color: #27ae60;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        .tool-card {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .tool-card:hover {
+            border-color: #3498db;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .tool-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .tool-icon {
+            font-size: 1.5em;
+            margin-right: 12px;
+        }
+        .tool-description {
+            color: #5a6c7d;
+            margin-bottom: 20px;
+        }
+        .tool-features {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .tool-features li {
+            color: #7f8c8d;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+        .tool-features li:before {
+            content: "✓";
+            color: #27ae60;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+        .launch-button {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 15px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        .launch-button:hover {
+            background-color: #2980b9;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #95a5a6;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Offline Tools</h1>
+        <p class="subtitle">
+            Utilities that work completely offline
+            <span class="offline-badge">🔒 OFFLINE</span>
+        </p>
+        
+        <div class="tools-grid">
+            <a href="encode.html" class="tool-card">
+                <div class="tool-title">
+                    <span class="tool-icon">🔐</span>
+                    Encode/Decode Tool
+                </div>
+                <div class="tool-description">
+                    Encode and decode text using various formats.
+                </div>
+                <span class="launch-button">Launch Tool →</span>
+            </a>
+            
+            <a href="intercom.html" class="tool-card">
+                <div class="tool-title">
+                    <span class="tool-icon">📹</span>
+                    Video Intercom
+                </div>
+                <div class="tool-description">
+                    Peer-to-peer video calling for secure, private communication.
+                </div>
+                <span class="launch-button">Launch Tool →</span>
+            </a>
+        </div>
+        
+        <div class="footer">
+            <p>
+                All tools operate entirely in your browser. 
+                No data is collected, stored, or transmitted to external servers.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
