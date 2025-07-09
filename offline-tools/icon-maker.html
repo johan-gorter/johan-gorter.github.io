@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icon Maker - Offline Tools</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            line-height: 1.6;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        .input-section {
+            text-align: center;
+            margin: 40px 0;
+        }
+        #emojiInput {
+            font-size: 72px;
+            width: 120px;
+            height: 120px;
+            text-align: center;
+            border: 3px solid #e9ecef;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 30px;
+            transition: border-color 0.3s;
+        }
+        #emojiInput:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .preview-section {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+        .preview-container {
+            text-align: center;
+        }
+        .preview-canvas {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background-image: 
+                linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+                linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+                linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            margin-bottom: 10px;
+        }
+        .size-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        .download-button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        .download-button:hover {
+            background-color: #2980b9;
+        }
+        .download-button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .instructions {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 40px;
+            color: #5a6c7d;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #3498db;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Tools</a>
+        <h1>Icon Maker</h1>
+        <p class="subtitle">
+            Create PNG icons from emojis with transparent backgrounds
+        </p>
+        
+        <div class="input-section">
+            <input type="text" id="emojiInput" placeholder="😀" maxlength="2" value="😀">
+        </div>
+        
+        <div class="preview-section">
+            <div class="preview-container">
+                <div class="size-label">192×192</div>
+                <canvas id="canvas192" class="preview-canvas" width="192" height="192"></canvas>
+                <br>
+                <button class="download-button" onclick="downloadIcon(192)">Download 192×192</button>
+            </div>
+            
+            <div class="preview-container">
+                <div class="size-label">512×512</div>
+                <canvas id="canvas512" class="preview-canvas" width="512" height="512" style="width: 192px; height: 192px;"></canvas>
+                <br>
+                <button class="download-button" onclick="downloadIcon(512)">Download 512×512</button>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>How to use:</h3>
+            <ul>
+                <li>Enter an emoji or any single character in the input field</li>
+                <li>The preview will update automatically</li>
+                <li>Click the download buttons to save PNG files with transparent backgrounds</li>
+                <li>Perfect for favicons, app icons, or web assets</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        const emojiInput = document.getElementById('emojiInput');
+        const canvas192 = document.getElementById('canvas192');
+        const canvas512 = document.getElementById('canvas512');
+        const ctx192 = canvas192.getContext('2d');
+        const ctx512 = canvas512.getContext('2d');
+        
+        function drawEmoji() {
+            const emoji = emojiInput.value || '😀';
+            
+            // Draw on 192x192 canvas
+            ctx192.clearRect(0, 0, 192, 192);
+            ctx192.font = '144px Arial';
+            ctx192.textAlign = 'center';
+            ctx192.textBaseline = 'middle';
+            ctx192.fillText(emoji, 96, 96);
+            
+            // Draw on 512x512 canvas
+            ctx512.clearRect(0, 0, 512, 512);
+            ctx512.font = '384px Arial';
+            ctx512.textAlign = 'center';
+            ctx512.textBaseline = 'middle';
+            ctx512.fillText(emoji, 256, 256);
+        }
+        
+        function downloadIcon(size) {
+            const canvas = size === 192 ? canvas192 : canvas512;
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `icon-${size}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+        }
+        
+        emojiInput.addEventListener('input', drawEmoji);
+        
+        // Initial draw
+        drawEmoji();
+    </script>
+</body>
+</html>
