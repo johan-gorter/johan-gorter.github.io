@@ -91,6 +91,38 @@
             text-align: center;
         }
         
+        #fullscreenButton {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.7);
+            transition: all 0.3s ease;
+            z-index: 20;
+        }
+        
+        #fullscreenButton:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        #fullscreenButton:active {
+            transform: scale(0.95);
+        }
+        
+        #fullscreenButton.hidden {
+            display: none;
+        }
+        
         @media (max-width: 600px) {
             #videoGrid {
                 grid-template-columns: 1fr;
@@ -102,6 +134,7 @@
 <body>
     <div id="container">
         <div id="status">Initializing...</div>
+        <button id="fullscreenButton" title="Enter fullscreen">⛶</button>
         <div id="videoGrid"></div>
         <button id="callButton"></button>
     </div>
@@ -152,6 +185,9 @@
                 window.history.replaceState({}, '', `?host=${roomId}`);
                 startPeer(roomId);
             }
+            
+            // Initialize fullscreen functionality
+            initFullscreen();
         }
 
         // Start PeerJS
@@ -232,6 +268,43 @@
                 conn.dataConn.send({ type: 'toggleCall' });
             });
         });
+
+        // Fullscreen functionality
+        function initFullscreen() {
+            const fullscreenButton = document.getElementById('fullscreenButton');
+            
+            // Handle fullscreen button click
+            fullscreenButton.addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.log('Fullscreen error:', err);
+                    });
+                }
+            });
+            
+            // Listen for fullscreen changes
+            document.addEventListener('fullscreenchange', updateFullscreenButton);
+            document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+            document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+            document.addEventListener('msfullscreenchange', updateFullscreenButton);
+            
+            // Initial button state
+            updateFullscreenButton();
+        }
+        
+        function updateFullscreenButton() {
+            const fullscreenButton = document.getElementById('fullscreenButton');
+            const isFullscreen = !!(document.fullscreenElement || 
+                                   document.webkitFullscreenElement || 
+                                   document.mozFullScreenElement || 
+                                   document.msFullscreenElement);
+            
+            if (isFullscreen) {
+                fullscreenButton.classList.add('hidden');
+            } else {
+                fullscreenButton.classList.remove('hidden');
+            }
+        }
 
         // Toggle call state
         async function toggleCall() {
