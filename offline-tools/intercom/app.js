@@ -81,9 +81,11 @@ function startPeer(id = null) {
     peer = id ? new Peer(id) : new Peer();
 
     peer.on('open', (peerId) => {
+        const shareUrl = `${window.location.origin}${window.location.pathname}?join=${roomId}`;
         updateStatus(isHost ? 
-            `Room: ${roomId}<br>Share: ${window.location.origin}${window.location.pathname}?join=${roomId}` : 
-            `Connecting to room: ${roomId}`
+            `Room: ${roomId}<br>Share: ${shareUrl}` : 
+            `Connecting to room: ${roomId}`, 
+            isHost ? shareUrl : null
         );
 
         if (!isHost) {
@@ -116,7 +118,8 @@ function handleConnection(conn) {
 function setupConnection(conn, peerId) {
     conn.on('open', () => {
         connections.set(peerId, { dataConn: conn });
-        updateStatus(isHost ? `${connections.size} client(s) connected` : 'Connected to host');
+        const shareUrl = `${window.location.origin}${window.location.pathname}?join=${roomId}`;
+        updateStatus(isHost ? `${connections.size} client(s) connected` : 'Connected to host', isHost && !isCallActive ? shareUrl : null);
         
         // Send current call state
         conn.send({ type: 'callState', active: isCallActive });
@@ -129,7 +132,8 @@ function setupConnection(conn, peerId) {
     conn.on('close', () => {
         connections.delete(peerId);
         removeVideoElement(peerId);
-        updateStatus(isHost ? `${connections.size} client(s) connected` : 'Disconnected');
+        const shareUrl = `${window.location.origin}${window.location.pathname}?join=${roomId}`;
+        updateStatus(isHost ? `${connections.size} client(s) connected` : 'Disconnected', isHost && !isCallActive ? shareUrl : null);
     });
 }
 
@@ -205,6 +209,9 @@ async function toggleCall() {
             // Add local video
             addVideoElement('local', localStream);
             
+            // Hide QR code when call starts
+            updateStatus(isHost ? `${connections.size} client(s) connected` : 'Connected to host', null);
+            
             // Call all connected peers
             if (isHost) {
                 connections.forEach((conn, peerId) => {
@@ -237,6 +244,12 @@ async function toggleCall() {
         button.classList.remove('active');
         grid.classList.remove('active');
         isCallActive = false;
+        
+        // Show QR code again when call ends (for host)
+        if (isHost) {
+            const shareUrl = `${window.location.origin}${window.location.pathname}?join=${roomId}`;
+            updateStatus(`${connections.size} client(s) connected`, shareUrl);
+        }
     }
 }
 
@@ -297,8 +310,32 @@ function removeVideoElement(id) {
 }
 
 // Update status text
-function updateStatus(text) {
-    document.getElementById('status').innerHTML = text;
+function updateStatus(text, qrUrl = null) {
+    const statusElement = document.getElementById('status');
+    statusElement.innerHTML = text;
+    
+    // Handle QR code
+    let qrContainer = document.getElementById('qrcode');
+    if (!qrContainer) {
+        qrContainer = document.createElement('div');
+        qrContainer.id = 'qrcode';
+        statusElement.parentNode.insertBefore(qrContainer, statusElement.nextSibling);
+    }
+    
+    if (qrUrl && isHost && !isCallActive) {
+        qrContainer.innerHTML = '';
+        new QRCode(qrContainer, {
+            text: qrUrl,
+            width: 200,
+            height: 200,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        qrContainer.style.display = 'block';
+    } else {
+        qrContainer.style.display = 'none';
+    }
 }
 
 // Start the app

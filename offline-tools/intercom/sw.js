@@ -23,10 +23,21 @@ self.addEventListener('install', (event) => {
 // Fetch event
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then((response) => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request);
+        // If network request succeeds, cache the response and return it
+        if (response && response.status === 200) {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME)
+            .then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+        }
+        return response;
+      })
+      .catch(() => {
+        // If network request fails, try to get from cache
+        return caches.match(event.request);
       })
   );
 });
