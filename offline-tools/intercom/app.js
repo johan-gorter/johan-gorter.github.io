@@ -38,21 +38,36 @@ function init() {
     const params = new URLSearchParams(window.location.search);
     const hostId = params.get('host');
     const joinId = params.get('join');
+    
+    // Check localStorage for saved room
+    const savedRoom = localStorage.getItem('intercomRoom');
+    const savedRole = localStorage.getItem('intercomRole');
 
     if (hostId) {
         // Returning host
         roomId = hostId;
         isHost = true;
+        localStorage.setItem('intercomRoom', roomId);
+        localStorage.setItem('intercomRole', 'host');
         startPeer(roomId);
     } else if (joinId) {
         // Client joining
         roomId = joinId;
         isHost = false;
+        localStorage.setItem('intercomRoom', roomId);
+        localStorage.setItem('intercomRole', 'client');
         startPeer();
+    } else if (savedRoom && savedRole) {
+        // Restored from localStorage (PWA launch)
+        roomId = savedRoom;
+        isHost = savedRole === 'host';
+        startPeer(isHost ? roomId : undefined);
     } else {
         // New room
         roomId = generateRoomId();
         isHost = true;
+        localStorage.setItem('intercomRoom', roomId);
+        localStorage.setItem('intercomRole', 'host');
         window.history.replaceState({}, '', `?host=${roomId}`);
         startPeer(roomId);
     }
