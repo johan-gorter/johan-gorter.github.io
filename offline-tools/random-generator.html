@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Data Generator - Offline Tools</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            line-height: 1.6;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            font-weight: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        .generate-button {
+            width: 50px;
+            height: 50px;
+            padding: 0;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+        .generate-button:hover {
+            background-color: #229954;
+        }
+        .columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        @media (max-width: 768px) {
+            .columns {
+                grid-template-columns: 1fr;
+            }
+        }
+        .data-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        .data-label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        .data-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .data-value {
+            flex: 1;
+            padding: 12px;
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            word-break: break-all;
+            min-width: 200px;
+            position: relative;
+        }
+        .password-overlay {
+            position: absolute;
+            top: 0;
+            left: 8px; /* match padding of data-value */
+            width: 200px;
+            height: 100%;
+            background: linear-gradient(to right, 
+                transparent 0%, 
+                transparent 5%, 
+                #C0C0C0 25%, 
+                #C0C0C0 75%, 
+                transparent 95%, 
+                transparent 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+        .copy-button {
+            width: 50px;
+            height: 50px;
+            padding: 0;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10); /* outer shadow */
+            position: relative;
+            /* inner shading */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10), inset 0 2px 8px rgba(255,255,255,0.25);
+        }
+        .copy-button::before {
+            content: "📋";
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            top: -2px; /* move icon 2px higher */
+        }
+        .copy-button:hover {
+            background-color: #2980b9;
+        }
+        .copy-button.copied {
+            background-color: #27ae60;
+        }
+        .copy-button.copied::before {
+            content: "✓";
+            top: 0; /* reset position for checkmark */
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #3498db;
+            text-decoration: none;
+            font-size: 0.95em;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .info-text {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .password-masked {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Tools</a>
+        <h1>Random Data Generator<button class="generate-button" onclick="generateAll()">🔄</button></h1>
+        <p class="subtitle">Generated random UUID, IBANs, BSN, BTW number and password</p>
+        
+        <div class="columns">
+            <div class="left-column">
+                <div class="data-section">
+                    <div class="data-label">UUID</div>
+                    <div class="data-container">
+                        <div class="data-value" id="uuid-value">...</div>
+                        <button class="copy-button" onclick="copyToClipboard('uuid-value', this)"></button>
+                    </div>
+                </div>
+                
+                <div class="data-section">
+                    <div class="data-label">Dutch BSN (Burgerservicenummer)</div>
+                    <div class="data-container">
+                        <div class="data-value" id="bsn-value">...</div>
+                        <button class="copy-button" onclick="copyToClipboard('bsn-value', this)"></button>
+                    </div>
+                </div>
+                
+                <div class="data-section">
+                    <div class="data-label">Dutch BTW Number (VAT)</div>
+                    <div class="data-container">
+                        <div class="data-value" id="btw-value">...</div>
+                        <button class="copy-button" onclick="copyToClipboard('btw-value', this)"></button>
+                    </div>
+                </div>
+                
+                <div class="data-section">
+                    <div class="data-label">Random Password</div>
+                    <div class="data-container">
+                        <div class="data-value password-masked" id="password-value">...</div>
+                        <button class="copy-button" onclick="copyToClipboard('password-value', this)"></button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="right-column">
+                <div class="data-section">
+                    <div class="data-label">Dutch IBAN Numbers</div>
+                    <div class="info-text">Random IBANs for ING, ABN AMRO, Rabobank, SNS, and KNAB</div>
+                    <div id="iban-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        function calculateIBANCheckDigits(countryCode, bankCode, accountNumber) {
+            // Move country code and check digits to end, replace with 00 initially
+            const rearranged = bankCode + accountNumber + countryCode + '00';
+            
+            // Replace letters with numbers (A=10, B=11, ..., Z=35)
+            let numericString = '';
+            for (let char of rearranged) {
+                if (char >= 'A' && char <= 'Z') {
+                    numericString += (char.charCodeAt(0) - 'A'.charCodeAt(0) + 10).toString();
+                } else {
+                    numericString += char;
+                }
+            }
+            
+            // Calculate mod 97
+            let remainder = 0;
+            for (let i = 0; i < numericString.length; i++) {
+                remainder = (remainder * 10 + parseInt(numericString[i])) % 97;
+            }
+            
+            const checkDigits = 98 - remainder;
+            return checkDigits.toString().padStart(2, '0');
+        }
+
+        function generateDutchIBAN(bankCode) {
+            const bankPrefixes = {
+                'ING': 'INGB',
+                'ABN AMRO': 'ABNA',
+                'Rabobank': 'RABO',
+                'SNS': 'SNSB',
+                'KNAB': 'KNAB'
+            };
+            
+            const prefix = bankPrefixes[bankCode];
+            const accountNumber = Math.floor(Math.random() * 10000000000).toString().padStart(10, '0');
+            const countryCode = 'NL';
+            
+            const checkDigits = calculateIBANCheckDigits(countryCode, prefix, accountNumber);
+            
+            return `${countryCode}${checkDigits}${prefix}${accountNumber}`;
+        }
+
+        function generateBSN() {
+            let bsn;
+            do {
+                bsn = Math.floor(Math.random() * 900000000 + 100000000).toString();
+            } while (!isValidBSN(bsn));
+            return bsn;
+        }
+
+        function isValidBSN(bsn) {
+            if (bsn.length !== 9) return false;
+            
+            let sum = 0;
+            for (let i = 0; i < 8; i++) {
+                sum += parseInt(bsn[i]) * (9 - i);
+            }
+            sum += parseInt(bsn[8]) * -1;
+            
+            return sum % 11 === 0;
+        }
+
+        function generateBTW() {
+            var bsn = generateBSN();
+            var r = Math.floor(Math.random() * 99) + 1;
+            var result = "NL" + bsn + "B" + r.toString().padStart(2, '0');
+            return result;
+        }
+
+        function generatePassword() {
+            const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+            const numbers = '0123456789';
+            const specials = '!@#$%&*-_+=';
+            const all = uppercase + lowercase + numbers + specials;
+            
+            let password = '';
+            
+            // Ensure at least 2 uppercase
+            password += uppercase[Math.floor(Math.random() * uppercase.length)];
+            password += uppercase[Math.floor(Math.random() * uppercase.length)];
+            
+            // Ensure at least 2 lowercase
+            password += lowercase[Math.floor(Math.random() * lowercase.length)];
+            password += lowercase[Math.floor(Math.random() * lowercase.length)];
+            
+            // Ensure at least 2 specials
+            password += specials[Math.floor(Math.random() * specials.length)];
+            password += specials[Math.floor(Math.random() * specials.length)];
+            
+            // Fill the rest randomly
+            for (let i = password.length; i < 20; i++) {
+                password += all[Math.floor(Math.random() * all.length)];
+            }
+            
+            // Shuffle the password
+            return password.split('').sort(() => Math.random() - 0.5).join('');
+        }
+
+        function generateAll() {
+            // Generate UUID
+            document.getElementById('uuid-value').textContent = generateUUID();
+            
+            // Generate IBANs
+            const banks = ['ING', 'ABN AMRO', 'Rabobank', 'SNS', 'KNAB'];
+            const ibanContainer = document.getElementById('iban-container');
+            ibanContainer.innerHTML = '';
+            
+            banks.forEach((bank, index) => {
+                const iban = generateDutchIBAN(bank);
+                const div = document.createElement('div');
+                div.className = 'data-container';
+                div.style.marginBottom = index < banks.length - 1 ? '10px' : '0';
+                div.innerHTML = `
+                    <div class="data-value" id="iban-${index}">${iban}</div>
+                    <button class="copy-button" onclick="copyToClipboard('iban-${index}', this)"></button>
+                `;
+                ibanContainer.appendChild(div);
+            });
+            
+            // Generate BSN
+            document.getElementById('bsn-value').textContent = generateBSN();
+            
+            // Generate BTW
+            document.getElementById('btw-value').textContent = generateBTW();
+            
+            // Generate Password
+            const passwordElement = document.getElementById('password-value');
+            passwordElement.textContent = generatePassword();
+            
+            // Add overlay div if it doesn't exist
+            if (!passwordElement.querySelector('.password-overlay')) {
+                const overlay = document.createElement('div');
+                overlay.className = 'password-overlay';
+                passwordElement.appendChild(overlay);
+            }
+        }
+
+        function copyToClipboard(elementId, button) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        // Generate initial data on page load
+        window.addEventListener('load', generateAll);
+    </script>
+</body>
+</html>

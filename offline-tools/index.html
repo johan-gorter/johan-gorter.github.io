@@ -116,10 +116,29 @@
             color: #95a5a6;
             font-size: 0.9em;
         }
+        .back-link {
+            text-align: left;
+            margin-bottom: 30px;
+        }
+        .back-link a {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 0.9em;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="back-link">
+            <a href="../">← About me (dutch)</a>
+        </div>
+        
         <h1>Offline Tools</h1>
         <p class="subtitle">
             Utilities that work offline
@@ -156,6 +175,17 @@
                 </div>
                 <div class="tool-description">
                     Generate QR codes from URLs with customizable size and download options.
+                </div>
+                <span class="launch-button">Launch Tool →</span>
+            </a>
+
+            <a href="random-generator.html" class="tool-card">
+                <div class="tool-title">
+                    <span class="tool-icon">🎲</span>
+                    Random Data Generator
+                </div>
+                <div class="tool-description">
+                    Generate random UUIDs, IBANs, BSN, BTW numbers and secure passwords.
                 </div>
                 <span class="launch-button">Launch Tool →</span>
             </a>
