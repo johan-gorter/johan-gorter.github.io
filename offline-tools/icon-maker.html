@@ -141,6 +141,13 @@
                 <br>
                 <button class="download-button" onclick="downloadIcon(512)">Download 512×512</button>
             </div>
+            
+            <div class="preview-container">
+                <div class="size-label">Favicon ICO</div>
+                <canvas id="canvasFavicon" class="preview-canvas" width="32" height="32" style="width: 64px; height: 64px; image-rendering: pixelated;"></canvas>
+                <br>
+                <button class="download-button" onclick="downloadFavicon()">Download favicon.ico</button>
+            </div>
         </div>
         
         <div class="instructions">
@@ -149,6 +156,7 @@
                 <li>Enter an emoji or any single character in the input field</li>
                 <li>The preview will update automatically</li>
                 <li>Click the download buttons to save PNG files with transparent backgrounds</li>
+                <li>Download favicon.ico for use as a website favicon (contains 32×32 and 16×16 sizes)</li>
                 <li>Perfect for favicons, app icons, or web assets</li>
             </ul>
         </div>
@@ -158,8 +166,10 @@
         const emojiInput = document.getElementById('emojiInput');
         const canvas192 = document.getElementById('canvas192');
         const canvas512 = document.getElementById('canvas512');
+        const canvasFavicon = document.getElementById('canvasFavicon');
         const ctx192 = canvas192.getContext('2d');
         const ctx512 = canvas512.getContext('2d');
+        const ctxFavicon = canvasFavicon.getContext('2d');
         
         function drawEmoji() {
             const emoji = emojiInput.value || '😀';
@@ -177,6 +187,13 @@
             ctx512.textAlign = 'center';
             ctx512.textBaseline = 'middle';
             ctx512.fillText(emoji, 256, 256);
+            
+            // Draw on favicon 32x32 canvas
+            ctxFavicon.clearRect(0, 0, 32, 32);
+            ctxFavicon.font = '24px Arial';
+            ctxFavicon.textAlign = 'center';
+            ctxFavicon.textBaseline = 'middle';
+            ctxFavicon.fillText(emoji, 16, 16);
         }
         
         function downloadIcon(size) {
@@ -191,6 +208,132 @@
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             });
+        }
+        
+        // Function to create ICO file from canvas data
+        function createICO(imageData32, imageData16) {
+            const numImages = 2;
+            const headerSize = 6;
+            const dirSize = 16;
+            const offset = headerSize + numImages * dirSize;
+
+            // ICO file header (6 bytes)
+            const header = new Uint8Array([
+                0, 0,       // Reserved (must be 0)
+                1, 0,       // Type (1 = ICO)
+                numImages, 0        // Number of images (2: 32x32 and 16x16)
+            ]);
+            
+            // Convert 32x32 and 16x16 image data to BMP format
+            const bmp32 = createBMP(imageData32, 32);
+            const bmp16 = createBMP(imageData16, 16);
+
+            // Directory entries (16 bytes each)
+            const dir32 = new Uint8Array(dirSize);
+            const view32 = new DataView(dir32.buffer);
+            view32.setUint8(0, 32);         // Width
+            view32.setUint8(1, 32);         // Height
+            view32.setUint16(4, 1, true);   // Color planes
+            view32.setUint16(6, 32, true);  // Bits per pixel
+            view32.setUint32(8, bmp32.length, true); // Size of image data
+            view32.setUint32(12, offset, true);      // Offset to image data
+            
+            const dir16 = new Uint8Array(dirSize);
+            const view16 = new DataView(dir16.buffer);
+            view16.setUint8(0, 16);         // Width
+            view16.setUint8(1, 16);         // Height
+            view16.setUint16(4, 1, true);   // Color planes
+            view16.setUint16(6, 32, true);  // Bits per pixel
+            view16.setUint32(8, bmp16.length, true); // Size of image data
+            view16.setUint32(12, offset + bmp32.length, true); // Offset to image data
+            
+            // Combine all parts
+            const ico = new Uint8Array(offset + bmp32.length + bmp16.length);
+            
+            ico.set(header, 0);
+            ico.set(dir32, headerSize);
+            ico.set(dir16, headerSize + dirSize);
+            ico.set(bmp32, offset);
+            ico.set(bmp16, offset + bmp32.length);
+            
+            return ico;
+        }
+        
+        function createBMP(imageData, size) {
+            const headerSize = 40;
+            const dataSize = size * size * 4;
+            const fileSize = headerSize + dataSize;
+            
+            const bmp = new Uint8Array(fileSize);
+            const view = new DataView(bmp.buffer);
+            
+            // BMP header
+            view.setUint32(0, headerSize, true);        // Header size
+            view.setInt32(4, size, true);               // Width
+            view.setInt32(8, size * 2, true);           // Height (doubled for ICO)
+            view.setUint16(12, 1, true);                // Planes
+            view.setUint16(14, 32, true);               // Bits per pixel
+            view.setUint32(16, 0, true);                // Compression
+            view.setUint32(20, dataSize, true);         // Image size
+            view.setUint32(24, 0, true);                // X pixels per meter
+            view.setUint32(28, 0, true);                // Y pixels per meter
+            view.setUint32(32, 0, true);                // Colors used
+            view.setUint32(36, 0, true);                // Important colors
+            
+            // Image data (flip vertically for BMP format)
+            for (let y = 0; y < size; y++) {
+                for (let x = 0; x < size; x++) {
+                    const srcIndex = ((size - 1 - y) * size + x) * 4;
+                    const dstIndex = headerSize + (y * size + x) * 4;
+                    
+                    bmp[dstIndex] = imageData[srcIndex + 2];     // B
+                    bmp[dstIndex + 1] = imageData[srcIndex + 1]; // G
+                    bmp[dstIndex + 2] = imageData[srcIndex];     // R
+                    bmp[dstIndex + 3] = imageData[srcIndex + 3]; // A
+                }
+            }
+            
+            return bmp;
+        }
+        
+        function downloadFavicon() {
+            // Create 32x32 image data
+            const canvas32 = document.createElement('canvas');
+            canvas32.width = 32;
+            canvas32.height = 32;
+            const ctx32 = canvas32.getContext('2d');
+            
+            const emoji = emojiInput.value || '😀';
+            ctx32.font = '24px Arial';
+            ctx32.textAlign = 'center';
+            ctx32.textBaseline = 'middle';
+            ctx32.fillText(emoji, 16, 16);
+            
+            // Create 16x16 image data
+            const canvas16 = document.createElement('canvas');
+            canvas16.width = 16;
+            canvas16.height = 16;
+            const ctx16 = canvas16.getContext('2d');
+            
+            ctx16.font = '12px Arial';
+            ctx16.textAlign = 'center';
+            ctx16.textBaseline = 'middle';
+            ctx16.fillText(emoji, 8, 8);
+            
+            const imageData32 = ctx32.getImageData(0, 0, 32, 32).data;
+            const imageData16 = ctx16.getImageData(0, 0, 16, 16).data;
+            
+            const icoData = createICO(imageData32, imageData16);
+            
+            const blob = new Blob([icoData], { type: 'image/x-icon' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'favicon.ico';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
         
         emojiInput.addEventListener('input', drawEmoji);
