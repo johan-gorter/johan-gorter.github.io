@@ -129,6 +129,9 @@
     <div class="container">
         <a href="index.html" class="back-link">← Back to Tools</a>
         <h1>QR Code Generator</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 30px; font-style: italic;">
+            💡 Tip: Use this to quickly copy-paste text and URLs to your phone
+        </p>
         
         <div class="input-group">
             <label for="text">Text or URL to encode:</label>
@@ -157,11 +160,9 @@
             </div>
         </div>
         
-        <button id="generateBtn" onclick="generateQR()">Generate QR Code</button>
-        
         <div id="error" class="error"></div>
         
-        <div class="qr-container">
+        <div class="qr-container" id="qrContainer" style="display: none;">
             <div id="qrcode"></div>
             <div class="download-section" id="downloadSection" style="display: none;">
                 <div class="download-buttons">
@@ -184,19 +185,23 @@
             const errorDiv = document.getElementById('error');
             const qrDiv = document.getElementById('qrcode');
             const downloadSection = document.getElementById('downloadSection');
+            const qrContainer = document.getElementById('qrContainer');
             
             // Clear previous error and QR code
             errorDiv.textContent = '';
             qrDiv.innerHTML = '';
-            downloadSection.style.display = 'none';
             qrSVG = null;
             
             if (!text) {
-                errorDiv.textContent = 'Please enter some text to generate a QR code.';
+                qrContainer.style.display = 'none';
+                downloadSection.style.display = 'none';
                 return;
             }
             
             try {
+                // Show QR container
+                qrContainer.style.display = 'block';
+                
                 // Create new QR code
                 qrCode = new QRCode(qrDiv, {
                     text: text,
@@ -210,13 +215,14 @@
                 // Generate SVG version
                 generateSVG(text, size, errorLevel);
                 
-                // Show download section after QR code is generated
+                // Show download section after QR code is generated (only if not already visible)
                 setTimeout(() => {
                     downloadSection.style.display = 'block';
                 }, 100);
                 
             } catch (error) {
                 errorDiv.textContent = 'Error generating QR code: ' + error.message;
+                qrContainer.style.display = 'none';
             }
         }
         
@@ -300,12 +306,18 @@
             URL.revokeObjectURL(link.href);
         }
         
-        // Allow Enter key to generate QR code
-        document.getElementById('text').addEventListener('keypress', function(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                generateQR();
-            }
+        // Auto-generate QR code on input
+        document.getElementById('text').addEventListener('input', function() {
+            generateQR();
+        });
+        
+        // Also regenerate when size or error level changes
+        document.getElementById('size').addEventListener('change', function() {
+            generateQR();
+        });
+        
+        document.getElementById('errorLevel').addEventListener('change', function() {
+            generateQR();
         });
         
         // Auto-focus on text input
