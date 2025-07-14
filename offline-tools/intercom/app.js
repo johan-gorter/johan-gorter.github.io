@@ -196,6 +196,23 @@ function updateFullscreenButton() {
     }
 }
 
+// Clean up all video streams and elements
+function cleanupAllVideos() {
+    const grid = document.getElementById('videoGrid');
+    const videoWrappers = grid.querySelectorAll('.videoWrapper');
+    
+    videoWrappers.forEach(wrapper => {
+        const video = wrapper.querySelector('video');
+        if (video && video.srcObject) {
+            const stream = video.srcObject;
+            stream.getTracks().forEach(track => track.stop());
+            video.srcObject = null;
+        }
+    });
+    
+    grid.innerHTML = '';
+}
+
 // Toggle call state
 async function toggleCall() {
     const button = document.getElementById('callButton');
@@ -238,8 +255,8 @@ async function toggleCall() {
             localStream = null;
         }
 
-        // Clear all videos
-        document.getElementById('videoGrid').innerHTML = '';
+        // Clean up all video streams and elements
+        cleanupAllVideos();
         
         button.classList.remove('active');
         grid.classList.remove('active');
@@ -326,8 +343,8 @@ function updateStatus(text, qrUrl = null) {
         qrContainer.innerHTML = '';
         new QRCode(qrContainer, {
             text: qrUrl,
-            width: 200,
-            height: 200,
+            width: 180,
+            height: 180,
             colorDark: "#000000",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H
