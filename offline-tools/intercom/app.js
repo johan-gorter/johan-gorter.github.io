@@ -1,8 +1,26 @@
 // Keep screen awake
-if ('wakeLock' in navigator) {
-    navigator.wakeLock.request('screen').catch(err => {
-        console.log('Wake lock error:', err);
-    });
+let wakeLock = null;
+
+async function requestWakeLock() {
+    if ('wakeLock' in navigator) {
+        try {
+            wakeLock = await navigator.wakeLock.request('screen');
+            console.log('Wake lock acquired');
+            
+            wakeLock.addEventListener('release', () => {
+                console.log('Wake lock released');
+            });
+        } catch (err) {
+            console.log('Wake lock error:', err);
+        }
+    }
+}
+
+function releaseWakeLock() {
+    if (wakeLock) {
+        wakeLock.release();
+        wakeLock = null;
+    }
 }
 
 // Register service worker
@@ -164,11 +182,15 @@ function initFullscreen() {
     const fullscreenButton = document.getElementById('fullscreenButton');
     
     // Handle fullscreen button click
-    fullscreenButton.addEventListener('click', () => {
+    fullscreenButton.addEventListener('click', async () => {
         if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(err => {
+            try {
+                await document.documentElement.requestFullscreen();
+                // Request wake lock when entering fullscreen
+                await requestWakeLock();
+            } catch (err) {
                 console.log('Fullscreen error:', err);
-            });
+            }
         }
     });
     
@@ -193,6 +215,8 @@ function updateFullscreenButton() {
         fullscreenButton.classList.add('hidden');
     } else {
         fullscreenButton.classList.remove('hidden');
+        // Release wake lock when exiting fullscreen
+        releaseWakeLock();
     }
 }
 
