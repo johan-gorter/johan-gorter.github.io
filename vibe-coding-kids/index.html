@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Coding Kids</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            line-height: 1.6;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        .qr-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .qr-section img {
+            width: 280px;
+            height: 280px;
+            background-color: white;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            filter: grayscale(100%) contrast(1000%);
+        }
+        .qr-caption {
+            color: #95a5a6;
+            font-size: 0.9em;
+            margin-top: 12px;
+        }
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        .tool-card {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .tool-card:hover {
+            border-color: #3498db;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .tool-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .tool-icon {
+            font-size: 1.5em;
+            margin-right: 12px;
+        }
+        .tool-description {
+            color: #5a6c7d;
+            margin-bottom: 20px;
+        }
+        .launch-button {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 15px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        .launch-button:hover {
+            background-color: #2980b9;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #95a5a6;
+            font-size: 0.9em;
+        }
+        .back-link {
+            text-align: left;
+            margin-bottom: 30px;
+        }
+        .back-link a {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 0.9em;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="back-link">
+            <a href="../">← Home</a>
+        </div>
+
+        <h1>Vibe Coding Kids</h1>
+        <p class="subtitle">Leer je eigen game maken met AI! 🎮</p>
+
+        <div class="qr-section">
+            <img src="qrcode.svg" alt="QR code om deze pagina te openen op je telefoon">
+            <div class="qr-caption">Scan de QR code om deze pagina op je telefoon te openen</div>
+        </div>
+
+        <div class="tools-grid">
+            <a href="https://chatgpt.com/g/g-69fc39b198288191ad7ecc0029ab8e25-afas-game-coder" target="_blank" rel="noopener noreferrer" class="tool-card">
+                <div class="tool-title">
+                    <span class="tool-icon">🤖</span>
+                    Game vibe coden met ChatGPT
+                </div>
+                <div class="tool-description">
+                    Maak je eigen game met behulp van ChatGPT.
+                </div>
+                <span class="launch-button">Openen →</span>
+            </a>
+
+            <a href="https://gemini.google.com/share/eeef3086f683" target="_blank" rel="noopener noreferrer" class="tool-card">
+                <div class="tool-title">
+                    <span class="tool-icon">💎</span>
+                    Game vibe coden met Gemini
+                </div>
+                <div class="tool-description">
+                    Maak je eigen game met behulp van Google Gemini.
+                </div>
+                <span class="launch-button">Openen →</span>
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>Veel plezier met vibe coден! 🚀</p>
+        </div>
+    </div>
+</body>
+</html>
