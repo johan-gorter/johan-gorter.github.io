@@ -1,8 +1,18 @@
-# Vibecode Friday
+<!-- .slide: class="welkom" -->
 
-Bouw met AI je eigen tool
+# Welkom
 
-<p class="subtitle">The Innovative Lawyer · 9 oktober 2026</p>
+<p class="subtitle">Vibecode Friday · Bouw met AI je eigen tool · The Innovative Lawyer · 9 oktober 2026</p>
+
+<div class="example-box voorbereiding">
+
+### Voorbereiding
+
+- Download de app vanaf **claude.com/download**
+- Log in of maak een account. Een Pro-account (24 euro) is prima
+- Open **johangorter.com/vibecode-workshop**
+
+</div>
 
 ---
 
@@ -25,11 +35,11 @@ Bouw met AI je eigen tool
 |---|---|
 | 09:30 | Welkom en intro: wat is code? |
 | 10:15 | Samen bouwen: Mail Chat in het demo-account |
-| 11:15 | Claude test zelf in de browser |
-| 11:45 | Breakout: automatisch testen |
+| 11:15 | Claude ogen en handen geven |
+| 11:45 | Uit de praktijk: Joyce Boonstra |
 | 12:15 | Lunch (doorbouwen mag) |
-| 12:45 | Uit de praktijk: Joyce Boonstra |
-| 13:05 | Doorbouwen: Mail Chat of je eigen project |
+| 12:45 | Breakout: automatisch testen |
+| 13:15 | Doorbouwen: Mail Chat of je eigen project |
 | 13:40 | Laten zien wat je gebouwd hebt |
 | 14:00 | Einde |
 
@@ -41,6 +51,14 @@ Bouw met AI je eigen tool
 <p class="level">Intro</p>
 
 ## Waarom dit ertoe doet
+
+---
+
+<!-- .slide: class="screenshot" -->
+![Geoffrey Hinton in 2016: "if you work as a radiologist you're like the coyote that's already over the edge"](screenshot-hinton-coyote.webp)
+
+Note:
+Video: https://www.youtube.com/watch?v=2HMPRXstSvQ (rond 0:22)
 
 ---
 
@@ -65,11 +83,11 @@ Hinton voorspelde dat deep learning binnen 5 jaar (hooguit 10) beter zou zijn da
   <div class="bar-row"><span>2023</span><div class="bar" style="width: 100%">36.024</div></div>
 </div>
 
-<p class="small">Radiologen in de VS die Medicare-patiënten behandelen (ACR-onderzoek, 2025)</p>
+<p class="small">Radiologen in de VS die Medicare-patiënten behandelen (Neiman Health Policy Institute, AJR 2024)</p>
 
-- Mayo Clinic: **+55%** radiologen sinds 2016 <!-- .element: class="fragment" -->
-- Recordaantal opleidingsplekken: **1.208** in 2025 <!-- .element: class="fragment" -->
-- Salaris **+48%** t.o.v. 2015, wereldwijd tekort <!-- .element: class="fragment" -->
+- Mayo Clinic: **+55%** radiologen sinds 2016
+- Recordaantal opleidingsplekken: **1.208** in 2025
+- Salaris **+48%** t.o.v. 2015, wereldwijd tekort
 
 Note:
 Bronnen: Works in Progress "AI isn't replacing radiologists" (sep 2025), Fortune (mei 2026),
@@ -127,6 +145,11 @@ Een platformspel met koekjes, lollies en knoppen.
 
 ---
 
+<!-- .slide: class="screenshot" -->
+![Zes renders van een keuken en eetkamer, ontworpen met AI](screenshot-interieur-ontwerp.webp)
+
+---
+
 ## Wat is vibe coding?
 
 > "…fully give in to the vibes, embrace exponentials, and forget that the code even exists."
@@ -145,7 +168,7 @@ Een map met tekstbestanden
 
 ---
 
-## Wat kan wel, wat (nog) niet?
+## Wat kan wel, wat (beter) niet?
 
 <div class="two-col">
 <div>
@@ -162,10 +185,9 @@ Een map met tekstbestanden
 
 ### <span class="warn">Oppassen</span>
 
-- Systemen voor veel gebruikers
+- Systemen voor andere gebruikers
 - Gevoelige gegevens
 - Alles wat nooit mag falen
-- Code die je niet kunt controleren
 
 </div>
 </div>
@@ -191,13 +213,7 @@ Een map met tekstbestanden
 
 ## Wat gaan we bouwen?
 
-Een **Chrome-extensie** met een chatpaneel naast je geopende mail in Gmail
-
-- AI vat de mail samen <!-- .element: class="fragment" -->
-- Stel vragen over de mail <!-- .element: class="fragment" -->
-- **Zoek in historie**: wat speelde er eerder met deze persoon? <!-- .element: class="fragment" -->
-- **Anonimiseer**: mail met Donald Duck-namen <!-- .element: class="fragment" -->
-- AI draait lokaal in **LM Studio**: de mail verlaat je laptop niet <!-- .element: class="fragment" -->
+<h1 class="demo">DEMO</h1>
 
 Note:
 Referentie: D:\github\fl-demo-walkthrough\mail-chat
@@ -205,15 +221,23 @@ Demo-account demo@johangorter.com met 15 fictieve mails. Inloggen via de 1Passwo
 
 ---
 
+## Chrome-extensie
+
+- Bestaande websites (Gmail, outlook.com) uitbreiden
+- Kan ook met jouw login andere websites raadplegen (dossier, rechtspraak)
+- Koppelen aan lokale AI via LM Studio
+
+---
+
 ## Wie doet wat?
 
 <div class="overzicht">
   <div class="node mens fragment">Jij<small>beschrijft wat je wilt</small></div>
-  <div class="pijl p1 fragment">praat met →</div>
+  <div class="pijl p1 fragment">↓ praat met</div>
   <div class="node claude fragment">Claude Code<small>schrijft code, kan fouten maken</small></div>
-  <div class="pijl p2 fragment">schrijft →</div>
-  <div class="node map fragment">Projectmap<small>mappen met tekstbestanden</small></div>
-  <div class="pijl p3 fragment">↓ extensie uit de projectmap</div>
+  <div class="pijl p2 fragment">↓ schrijft</div>
+  <div class="node map fragment">Code<small>mappen met tekstbestanden</small></div>
+  <div class="pijl p3 fragment">↑ voert uit</div>
   <div class="node gmail fragment">Gmail</div>
   <div class="pijl p4 fragment">⇄ leest mail</div>
   <div class="node computer fragment">Computer<small>snel, foutloos, voorspelbaar</small></div>
@@ -233,17 +257,12 @@ Een database hebben we vandaag niet nodig.
 
 ---
 
-## Klaarzetten
+<!-- .slide: class="grote-prompt" -->
+
+## Aan de slag
 
 1. **Claude desktop-app** → Code → nieuwe map `mail-chat`
-2. Inloggen op het demo-account via de **1Password-link**
-
-Note:
-LM Studio en het model komen later, via de USB-stick (na de AGENTS.md-uitleg).
-
----
-
-## De eerste prompt
+2. Geef deze eerste prompt:
 
 <div class="example-box prompt">
 
@@ -251,7 +270,22 @@ Maak een chrome extensie die een chat paneel toont als ik in gmail een e-mail op
 
 </div>
 
-<p class="todo">Inhoud volgt</p>
+Note:
+Deze slide blijft staan terwijl iedereen aan de slag gaat.
+LM Studio en het model komen later, via de USB-stick (na de AGENTS.md-uitleg).
+Inloggen op het demo-account (1Password-link) staat nu niet meer op een slide.
+
+---
+
+## Hoe communiceert AI?
+
+- Als menselijke software ontwikkelaar?
+- Vriendelijk?
+- Behulpzaam?
+- Technisch?
+
+Note:
+Interactie: vraag de zaal wat ze zien in de antwoorden van Claude.
 
 ---
 
@@ -265,17 +299,22 @@ maak een AGENTS.md bestand voor dit project. Schrijf erin dat ik advocaat ben en
 
 </div>
 
-<p class="todo">Inhoud volgt</p>
+---
+
+## Nieuwe chat = Nieuwe ontwikkelaar
+
+<p class="subtitle">Wanneer begin je een nieuwe chat?</p>
+
+- Je begint aan een **nieuwe taak** of een ander onderwerp
+- Een stap is **af en werkt**
+- Claude **draait rondjes**: dezelfde fout, of vergeet wat je zei
+- Het geheugen (context) is **15–40%** vol: best practice
+
+<p class="small">Een nieuwe chat begint leeg, maar leest AGENTS.md altijd opnieuw.<br>Wat Claude moet onthouden: laat het in AGENTS.md zetten.</p>
 
 ---
 
-## AGENTS.md over meerdere sessies
-
-<p class="todo">Inhoud volgt</p>
-
----
-
-## De USB-stick
+## De USB-sticks
 
 Start een **nieuwe, losse chat** met deze prompt:
 
@@ -285,7 +324,7 @@ installeer LM-studio en het model van de usb stick
 
 </div>
 
-<p class="todo">Inhoud volgt</p>
+Geef de USB-stick door wanneer je klaar bent
 
 Note:
 LM Studio-server: Developer-tab → Start Server (localhost:1234).
@@ -294,7 +333,7 @@ Lukt het lokale model niet? Fallback: Claude Sonnet in de cloud, mag hier omdat 
 
 ---
 
-## Van prompt tot skill
+## Skill hypes
 
 <svg class="hypes" viewBox="0 0 1140 380" role="img" aria-label="Hype-curves van juni 2025 tot juni 2026">
   <defs>
@@ -334,7 +373,7 @@ Daarna naar beneden voor de details.
 
 --
 
-## Van prompt tot skill
+## Skill hypes
 
 <p class="subtitle">de hypes die vibe-coders voorbij zagen komen</p>
 
@@ -359,6 +398,8 @@ Note:
 
 ---
 
+<!-- .slide: class="grote-prompt" -->
+
 ## Laat je interviewen
 
 <div class="example-box prompt">
@@ -370,24 +411,22 @@ Note:
 - AI stelt de vragen, jij neemt de beslissingen <!-- .element: class="fragment" -->
 - Skill: aihero.dev/skills-grill-me <!-- .element: class="fragment" -->
 
-<p class="todo">Inhoud volgt</p>
-
 ---
 
 <!-- .slide: class="divider" -->
 <p class="level">11:15</p>
 
-## Claude laat zelf testen
+## Claude ogen en handen geven
 
 --
 
 <div class="overzicht focus">
   <div class="node mens">Jij</div>
-  <div class="pijl p1">praat met →</div>
+  <div class="pijl p1">↓ praat met</div>
   <div class="node claude aan">Claude Code</div>
-  <div class="pijl p2">schrijft →</div>
-  <div class="node map">Projectmap</div>
-  <div class="pijl p3">↓ extensie uit de projectmap</div>
+  <div class="pijl p2">↓ schrijft</div>
+  <div class="node map">Code</div>
+  <div class="pijl p3">↑ voert uit</div>
   <div class="node gmail aan">Gmail<small>demo-account</small></div>
   <div class="pijl p4 aan">⇄ leest mail</div>
   <div class="node computer aan">Computer</div>
@@ -398,102 +437,100 @@ Note:
 
 --
 
+<!-- .slide: class="grote-prompt" -->
+
 ## Claude opent zelf de browser
-
-<p class="subtitle">met Claude in Chrome</p>
-
-<p class="todo">Inhoud volgt</p>
-
---
-
-## Toegang tot het demo-account
-
-<p class="todo">Inhoud volgt</p>
-
----
-
-<!-- .slide: class="divider" -->
-<p class="level">11:45 · Breakout</p>
-
-## Automatisch testen
-
---
-
-## Iedereen dezelfde prompt
-
-<p class="todo">Inhoud volgt</p>
-
-Note:
-Iedereen geeft dezelfde prompt, Claude bouwt de tests. Daarna vergelijken: wie kreeg een nep-Gmail, wie een nep-LM Studio, en waarom?
-
---
-
-## Geef AI een feedbackloop
-
-<div class="flow">
-  <div class="box">AI schrijft code</div><span class="arrow">→</span>
-  <div class="box">Test draait</div><span class="arrow">→</span>
-  <div class="box">AI ziet de fout</div><span class="arrow">→</span>
-  <div class="box">AI verbetert</div>
-</div>
-
-- Zonder feedback gokt AI <!-- .element: class="fragment" -->
-- Laat AI eerst een test schrijven, dan de code <!-- .element: class="fragment" -->
-
---
-
-## Een nep-Gmail op je laptop
 
 <div class="example-box prompt">
 
-Bouw een nep-Gmail op `localhost:3001` met de demo-mails. Gebruik dezelfde HTML-classes als Gmail. Test de extensie daarop: open zelf de browser, klik en kijk.
+Installeer chrome-devtools-mcp met extensietools en test hiermee de extensie zelf.
 
 </div>
 
-- Geen echte mailbox nodig <!-- .element: class="fragment" -->
-- Claude kan zelf klikken, kijken en fouten vinden <!-- .element: class="fragment" -->
-- Test ook de valkuil-mails: BSN, CEO-fraude, phishing, journalist <!-- .element: class="fragment" -->
+<div class="inlog">
+
+<img class="qr" src="qr-demo-account.png" alt="QR-code naar de inloggegevens van het demo-account">
+
+<div>
+
+**Inloggegevens demo-account**<br>
+<a href="https://share.1password.com/s#4sNeSZkw-dMqmp49XYCdi1DPH6aavxBdIYpGkP59314">share.1password.com/s#4sNeSZkw-<br>dMqmp49XYCdi1DPH6aavxBdIYpGkP59314</a>
+
+</div>
+
+</div>
 
 Note:
-Verwachting: Claude bouwt zelf zo'n nep-Gmail. Bestaande slide uit de vorige versie (mail-beantwoorder), nog afstemmen op Mail Chat.
+Claude in Chrome werkt hier niet: daarin kan de extensie niet geladen worden.
 
---
-
-<!-- .slide: class="screenshot" -->
-![De nep-Gmail met de extensie: waarschuwing voor een BSN en een ingevuld concept](screenshot-mockup-concept.jpg)
-
-Note:
-Screenshot van de vorige versie (mail-beantwoorder). Vervangen door Mail Chat.
-De extensie herkent het BSN met vaste regels (geen AI) en maskeert het voordat de mail naar het model gaat.
-Voorbeeld uit de modelvergelijking: Gemma 4 E4B zonder nadenken bevestigde aan een journalist wie de cliënt was,
-terwijl de prompt dat verbiedt. Test de valkuil-mails na elke wijziging van model of prompt.
-
---
-
-## Ook een nep-LM Studio?
-
-<p class="todo">Inhoud volgt</p>
-
-Note:
-Verwachting: Claude maakt ook een nep-LM Studio met vaste antwoorden, zodat de tests altijd hetzelfde resultaat geven.
-
---
-
-## Functionaliteit bewaken
-
-<p class="todo">Inhoud volgt</p>
 
 ---
 
 <!-- .slide: class="divider" -->
-<p class="level">12:45 · Uit de praktijk</p>
+<p class="level">11:45 · Uit de praktijk</p>
 
 ## Joyce Boonstra
 
 <p class="subtitle">Vibe code-projecten uit de praktijk</p>
 
 Note:
-Na de lunch: inspiratie vlak voordat deelnemers kiezen tussen Mail Chat en een eigen project.
+Voor de lunch: voorbeelden uit de praktijk, als inspiratie voor wat je zelf kunt bouwen.
+
+---
+
+<!-- .slide: class="divider" -->
+<p class="level">12:45 · Breakout</p>
+
+## Automatisch testen
+
+--
+
+## Werkende functies mogen niet kapot gaan
+
+### Hoe?
+
+Professionele software-ontwikkelaars gebruiken hier **geautomatiseerde tests** voor
+
+<p class="small">(Weer meer software dus)</p>
+
+--
+
+<!-- .slide: class="grote-prompt" -->
+
+## De prompt
+
+<div class="example-box prompt">
+
+Schrijf geautomatiseerde tests die bestaande functionaliteit bewaken. Zorg dat ze zo snel mogelijk uitgevoerd worden.
+
+</div>
+
+Note:
+Iedereen geeft dezelfde prompt. Daarna vergelijken: wie kreeg een nep-Gmail, wie een nep-LM Studio, en waarom?
+
+--
+
+## Geef AI een feedbackloop
+
+<div class="flow">
+  <div class="box">AI wijzigt code</div><span class="arrow">→</span>
+  <div class="box">Tests draaien</div><span class="arrow">→</span>
+  <div class="box">AI ziet wat stuk is</div><span class="arrow">→</span>
+  <div class="box">AI herstelt</div>
+</div>
+
+- Zonder feedback gokt AI <!-- .element: class="fragment" -->
+- Tests bewaken wat al werkte <!-- .element: class="fragment" -->
+
+--
+
+## Resultaat
+
+- Dummy Gmail
+- Dummy LM Studio
+- Test-code toegevoegd
+- AI snapt dat hij na ingrijpende wijzigingen hiermee kan controleren of alles nog werkt
+- Professionals gebruiken tests om te voorkomen dat iemand uit het team iets stukmaakt
 
 ---
 
@@ -512,9 +549,61 @@ Na de lunch: inspiratie vlak voordat deelnemers kiezen tussen Mail Chat en een e
 
 --
 
+<div class="overzicht focus">
+  <div class="node mens">Jij</div>
+  <div class="pijl p1">↓ praat met</div>
+  <div class="node claude">Claude Code</div>
+  <div class="pijl p2 aan">↓ schrijft</div>
+  <div class="node map aan">Code<small>opgeruimd</small></div>
+  <div class="pijl p3">↑ voert uit</div>
+  <div class="node gmail">Gmail</div>
+  <div class="pijl p4">⇄ leest mail</div>
+  <div class="node computer">Computer</div>
+  <div class="pijl p5">⇄ vraagt AI</div>
+  <div class="node lokaal">Lokale AI</div>
+  <div class="node db optioneel">Database</div>
+</div>
+
+--
+
+## Code wordt vanzelf rommelig
+
+- AI bouwt steeds iets bij, maar ruimt niet uit zichzelf op <!-- .element: class="fragment" -->
+- Vergelijk: een contract met tien addenda. Klopt nog wel, maar niemand kan het meer lezen <!-- .element: class="fragment" -->
+- Opruimen = een geconsolideerde versie maken: dezelfde werking, beter leesbaar <!-- .element: class="fragment" -->
+
+<p class="fragment small">Programmeurs noemen dit refactoren</p>
+
+Note:
+Rommelige code is niet alleen lelijk: AI moet dan meer lezen, ziet verbanden over het hoofd en maakt vaker iets stuk.
+
+--
+
+## Wanneer opruimen?
+
+- Een bestand heeft **meer dan 500 regels** <!-- .element: class="fragment" -->
+- Een kleine wijziging maakt iets anders stuk <!-- .element: class="fragment" -->
+- AI heeft meerdere pogingen nodig voor iets simpels <!-- .element: class="fragment" -->
+
+Note:
+500 regels is een vuistregel, geen wet. Het punt is dat je een grens afspreekt die AI zelf kan controleren.
+
+--
+
+<!-- .slide: class="grote-prompt" -->
+
 ## AI meldt wanneer opruimen nodig is
 
-<p class="todo">Inhoud volgt</p>
+<div class="example-box prompt">
+
+Voeg aan CLAUDE.md toe: als een bestand meer dan 500 regels heeft, meld dat en stel voor om op te ruimen. Draai de tests voor en na het opruimen.
+
+</div>
+
+- Niet wachten? Typ `/simplify` <!-- .element: class="fragment" -->
+
+Note:
+CLAUDE.md leest Claude bij elk gesprek, dus de afspraak blijft gelden. /simplify is ingebouwd in Claude Code en ruimt de laatste wijzigingen op.
 
 ---
 
@@ -527,11 +616,11 @@ Na de lunch: inspiratie vlak voordat deelnemers kiezen tussen Mail Chat en een e
 
 <div class="overzicht focus">
   <div class="node mens">Jij</div>
-  <div class="pijl p1">praat met →</div>
+  <div class="pijl p1">↓ praat met</div>
   <div class="node claude">Claude Code</div>
-  <div class="pijl p2">schrijft →</div>
-  <div class="node map">Projectmap</div>
-  <div class="pijl p3">↓ extensie uit de projectmap</div>
+  <div class="pijl p2">↓ schrijft</div>
+  <div class="node map">Code</div>
+  <div class="pijl p3">↑ voert uit</div>
   <div class="node gmail aan">Gmail<small>webserver</small></div>
   <div class="pijl p4 aan">⇄ leest mail</div>
   <div class="node computer aan">Computer<small>browser</small></div>
@@ -576,11 +665,11 @@ Na de lunch: inspiratie vlak voordat deelnemers kiezen tussen Mail Chat en een e
 
 <div class="overzicht focus">
   <div class="node mens">Jij</div>
-  <div class="pijl p1">praat met →</div>
+  <div class="pijl p1">↓ praat met</div>
   <div class="node claude">Claude Code</div>
-  <div class="pijl p2 aan">schrijft →</div>
-  <div class="node map aan">Projectmap<small>met geschiedenis</small></div>
-  <div class="pijl p3">↓ extensie uit de projectmap</div>
+  <div class="pijl p2 aan">↓ schrijft</div>
+  <div class="node map aan">Code<small>met geschiedenis</small></div>
+  <div class="pijl p3">↑ voert uit</div>
   <div class="node gmail">Gmail</div>
   <div class="pijl p4">⇄ leest mail</div>
   <div class="node computer">Computer</div>
@@ -591,12 +680,57 @@ Na de lunch: inspiratie vlak voordat deelnemers kiezen tussen Mail Chat en een e
 
 --
 
-## Git: een undo-knop met geschiedenis
+<!-- .slide: class="grote-prompt" -->
 
-- Elke werkende stap: **commit** <!-- .element: class="fragment" -->
-- AI maakt er een puinhoop van? Terug naar de vorige versie <!-- .element: class="fragment" -->
-- GitHub (privé) = backup in de cloud <!-- .element: class="fragment" -->
-- Laat AI de commits voor je doen <!-- .element: class="fragment" -->
+## Je project staat alleen op je laptop
+
+<div class="example-box prompt">
+
+Hoeveel bestanden staan er in mijn projectmap?
+
+</div>
+
+Note:
+Laat iedereen dit vragen. Het zijn er waarschijnlijk duizenden, terwijl ze zelf maar een handvol hebben laten schrijven.
+
+--
+
+## Niet elk bestand is geschreven
+
+- **Geschreven**: door AI, op jouw verzoek <!-- .element: class="fragment" -->
+- **Gedownload**: bouwstenen van anderen, vaak duizenden bestanden <!-- .element: class="fragment" -->
+- **Gecompileerd**: automatisch gemaakt uit de geschreven bestanden <!-- .element: class="fragment" -->
+
+<p class="fragment">Zo'n map rechtstreeks in OneDrive of Google Drive? Niet aan te raden: het synchroniseren van al die kleine bestanden gaat traag en loopt vast</p>
+
+Note:
+Alleen de geschreven bestanden zijn echt van jou. De rest kan AI altijd opnieuw downloaden of maken.
+
+--
+
+<!-- .slide: class="grote-prompt" -->
+
+## Laat AI de backup maken
+
+<div class="example-box prompt">
+
+Voeg aan CLAUDE.md toe: als ik "backup" zeg, zet dan een zip van de projectmap in mijn OneDrive, zonder de gedownloade en gecompileerde bestanden.
+
+</div>
+
+- Daarna typ je gewoon: **backup** <!-- .element: class="fragment" -->
+
+--
+
+## Git met GitHub
+
+- Code is een map met tekstbestanden <!-- .element: class="fragment" -->
+- Git houdt de geschiedenis van die map bij <!-- .element: class="fragment" -->
+- **Commit**: een versie opslaan, met een korte beschrijving <!-- .element: class="fragment" -->
+- **Push**: je versies naar GitHub sturen, de backup in de cloud <!-- .element: class="fragment" -->
+- **Pull request**: een wijzigingsvoorstel dat je eerst bekijkt en dan overneemt, net als een redline <!-- .element: class="fragment" -->
+
+<p class="fragment small">Laat AI de commits en pushes voor je doen</p>
 
 --
 
@@ -605,7 +739,7 @@ Na de lunch: inspiratie vlak voordat deelnemers kiezen tussen Mail Chat en een e
 | Strategie | Impact |
 |---|---|
 | Niets | Alles weg |
-| Map in OneDrive/Dropbox | Bestanden terug, geen geschiedenis |
+| Backup naar OneDrive | Terug tot de laatste backup |
 | Git + GitHub | Alles terug, elke versie |
 
 ---

@@ -36,6 +36,19 @@
         width: 1280,
         height: 720,
         plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
+      }).then(() => {
+        // In markdown, `<!-- .element: class="fragment" -->` after **bold** or `code`
+        // lands on that inline element; move it to the whole list item.
+        document.querySelectorAll(".slides li > .fragment:not(li)").forEach((el) => {
+          el.classList.remove("fragment");
+          el.parentElement.classList.add("fragment");
+        });
+        // Reveal already numbered the fragments; drop those numbers so sync()
+        // orders them again by their position on the slide.
+        document.querySelectorAll(".slides [data-fragment-index]").forEach((el) => {
+          el.removeAttribute("data-fragment-index");
+        });
+        Reveal.sync();
       });
     </script>
   </body>
